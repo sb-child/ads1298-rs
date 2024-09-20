@@ -1,4 +1,5 @@
 #![allow(non_camel_case_types)]
+pub mod access;
 pub mod addressable;
 pub mod data;
 
@@ -9,7 +10,10 @@ use ux::u24;
 /// 9.4.1.3 数据检索
 #[derive(Clone, Copy, Debug)]
 pub enum DataRegister {
-    DATA_STATUS(data::DataStatus),
+    // DATA_STATUS(data::DataStatus),
+    DATA_STATUS_1(data::DataStatus1),
+    DATA_STATUS_2(data::DataStatus2),
+    DATA_STATUS_3(data::DataStatus3),
     DATA_CH1(u24),
     DATA_CH2(u24),
     DATA_CH3(u24),
