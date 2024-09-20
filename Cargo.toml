@@ -1,0 +1,12 @@
+[package]
+name = "ads1298-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bitfield = "0.17.0"
+byteorder = "1.5.0"
+embedded-hal = "1.0.0"
+enum_variant_type = "0.3.1"
+log = { version = "0.4.21", features = [] }
+ux = "0.1.5"
