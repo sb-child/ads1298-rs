@@ -1,6 +1,16 @@
 use byteorder::{BigEndian, ByteOrder, ReadBytesExt};
 use embedded_hal::spi::SpiDevice;
-use registers::data::{DataStatus1, DataStatus2, DataStatus3};
+use registers::access::WriteError;
+use registers::data::{
+    ChSetReg, Config1Reg, Config2Reg, Config3Reg, Config4Reg, DataStatus1, DataStatus2,
+    DataStatus3, GpioReg, IdReg, LOffReg, LOffSensNReg, LOffSensPReg, LoffFlipReg, PaceReg,
+    RespReg, RldSensNReg, RldSensPReg, Wct1Reg, Wct2Reg,
+};
+use registers::{
+    CH1SET, CH2SET, CH3SET, CH4SET, CH5SET, CH6SET, CH7SET, CH8SET, CONFIG1, CONFIG2, CONFIG3,
+    CONFIG4, GPIO, ID, LOFF, LOFF_FLIP, LOFF_SENSN, LOFF_SENSP, PACE, RESP, RLD_SENSN, RLD_SENSP,
+    WCT1, WCT2,
+};
 use ux::u24;
 
 use crate::driver::initialization::{Application3Lead, InitializeError, Initializer};
@@ -8,8 +18,7 @@ use crate::driver::registers::access::{ReadError, ReadFromRegister, WriteToRegis
 use crate::driver::registers::addressable::Addressable;
 
 use self::operator::Operator;
-use self::registers::addressable::Address;
-use self::registers::data::{DataStatus, ErrorStatus, LoopReadBackConfig};
+
 use self::registers::DataRegister;
 use self::stream_reader::StreamReader;
 
@@ -22,26 +31,21 @@ pub struct ADS1298<SPI: SpiDevice> {
     pub operator: Operator<SPI>,
 }
 
-const LOOP_READ_BACK_CONFIG_FIELDS: &'static [registers::DataRegister] = &[
-    // DataRegister::DATA_STATUS(DataStatus {
-    //     ds1: DataStatus1(0),
-    //     ds2: DataStatus2(0),
-    //     ds3: DataStatus3(0),
-    // }),
-    DataRegister::DATA_STATUS_1(DataStatus1(0)),
-    DataRegister::DATA_STATUS_2(DataStatus2(0)),
-    DataRegister::DATA_STATUS_3(DataStatus3(0)),
-    DataRegister::DATA_CH1(u24::new(0)),
-    DataRegister::DATA_CH2(u24::new(0)),
-    DataRegister::DATA_CH3(u24::new(0)),
-    DataRegister::DATA_CH4(u24::new(0)),
-    DataRegister::DATA_CH5(u24::new(0)),
-    DataRegister::DATA_CH6(u24::new(0)),
-    DataRegister::DATA_CH7(u24::new(0)),
-    DataRegister::DATA_CH8(u24::new(0)),
-];
+// const LOOP_READ_BACK_CONFIG_FIELDS: &'static [registers::DataRegister] = &[
+//     DataRegister::DATA_STATUS_1(DataStatus1(0)),
+//     DataRegister::DATA_STATUS_2(DataStatus2(0)),
+//     DataRegister::DATA_STATUS_3(DataStatus3(0)),
+//     DataRegister::DATA_CH1(u24::new(0)),
+//     DataRegister::DATA_CH2(u24::new(0)),
+//     DataRegister::DATA_CH3(u24::new(0)),
+//     DataRegister::DATA_CH4(u24::new(0)),
+//     DataRegister::DATA_CH5(u24::new(0)),
+//     DataRegister::DATA_CH6(u24::new(0)),
+//     DataRegister::DATA_CH7(u24::new(0)),
+//     DataRegister::DATA_CH8(u24::new(0)),
+// ];
 
-const LOOP_READ_BACK_DATA_WIDTH: &'static [usize] = &[1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3];
+// const LOOP_READ_BACK_DATA_WIDTH: &'static [usize] = &[1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3];
 
 impl<SPI: SpiDevice> ADS1298<SPI> {
     pub fn new(spi: SPI) -> ADS1298<SPI> {
@@ -146,6 +150,28 @@ impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
         &mut self,
         _application: Application3Lead,
     ) -> Result<(), InitializeError<Self::SpiError>> {
+        // 重置芯片
+        self.operator.reset().map_err(InitializeError::ResetError)?;
+        // 停止数据连续发送
+        self.operator
+            .stop_stream()
+            .map_err(InitializeError::ResetError)?;
+        // 高分辨率模式, 输出数据速率 8kSPS
+        self.write(CONFIG1, {
+            let mut x = Config1Reg(0);
+            x.set_hr(true);
+            x.set_dr(0b010);
+            x
+        })
+        .map_err(InitializeError::ResetError)?;
+        // 不更改配置寄存器2
+        self.write(CONFIG2, {
+            let x = Config2Reg(0);
+            x
+        })
+        .map_err(InitializeError::ResetError)?;
+    
+
         struct AddressData(u8, u8);
 
         const INITIAL_ADDRESS_DATA_ARR: &'static [AddressData] = &[
@@ -164,7 +190,7 @@ impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
             AddressData(0x2F, 0x31),
             AddressData(0x00, 0x01),
         ];
-
+        // self.write(, data)
         for address_data in INITIAL_ADDRESS_DATA_ARR {
             self.operator
                 .write(address_data.0, address_data.1)
@@ -179,51 +205,48 @@ impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
     }
 }
 
-impl<SPI: SpiDevice> ReadFromRegister<registers::CONFIG, MainConfig, SPI::Error> for ADS1298<SPI> {
-    fn read(&mut self, register: CONFIG) -> Result<MainConfig, ReadError<SPI::Error>> {
-        let data = self.operator.read(register.get_address())?;
-        Ok(MainConfig(data))
-    }
+macro_rules! impl_rw_reg {
+    ($reg: ident, $result_type: tt) => {
+        impl<SPI: SpiDevice> ReadFromRegister<$reg, $result_type, SPI::Error> for ADS1298<SPI> {
+            fn read(&mut self, register: $reg) -> Result<$result_type, ReadError<SPI::Error>> {
+                let data = self.operator.read(register.get_address())?;
+                Ok($result_type(data))
+            }
+        }
+        impl<SPI: SpiDevice> WriteToRegister<$reg, $result_type, SPI::Error> for ADS1298<SPI> {
+            fn write(
+                &mut self,
+                register: $reg,
+                data: $result_type,
+            ) -> Result<(), WriteError<SPI::Error>> {
+                self.operator.write(register.get_address(), data.0)?;
+                Ok(())
+            }
+        }
+    };
 }
 
-impl<SPI: SpiDevice> ReadFromRegister<registers::DATA_STATUS, DataStatus, SPI::Error>
-    for ADS1298<SPI>
-{
-    fn read(
-        &mut self,
-        register: registers::DATA_STATUS,
-    ) -> Result<DataStatus, ReadError<SPI::Error>> {
-        let data = self.operator.read(register.get_address())?;
-        Ok(DataStatus(data))
-    }
-}
-
-impl<SPI: SpiDevice> ReadFromRegister<registers::CH_CNFG, LoopReadBackConfig, SPI::Error>
-    for ADS1298<SPI>
-{
-    fn read(
-        &mut self,
-        register: registers::CH_CNFG,
-    ) -> Result<LoopReadBackConfig, ReadError<SPI::Error>> {
-        let data = self.operator.read(register.get_address())?;
-        Ok(LoopReadBackConfig(data))
-    }
-}
-
-impl<SPI: SpiDevice> ReadFromRegister<registers::ERROR_STATUS, ErrorStatus, SPI::Error>
-    for ADS1298<SPI>
-{
-    fn read(
-        &mut self,
-        register: registers::ERROR_STATUS,
-    ) -> Result<ErrorStatus, ReadError<SPI::Error>> {
-        let data = self.operator.read(register.get_address())?;
-        Ok(ErrorStatus(data))
-    }
-}
-
-impl<SPI: SpiDevice> ReadFromRegister<Address, u8, SPI::Error> for ADS1298<SPI> {
-    fn read(&mut self, register: Address) -> Result<u8, ReadError<SPI::Error>> {
-        self.operator.read(register)
-    }
-}
+impl_rw_reg!(ID, IdReg);
+impl_rw_reg!(CONFIG1, Config1Reg);
+impl_rw_reg!(CONFIG2, Config2Reg);
+impl_rw_reg!(CONFIG3, Config3Reg);
+impl_rw_reg!(LOFF, LOffReg);
+impl_rw_reg!(CH1SET, ChSetReg);
+impl_rw_reg!(CH2SET, ChSetReg);
+impl_rw_reg!(CH3SET, ChSetReg);
+impl_rw_reg!(CH4SET, ChSetReg);
+impl_rw_reg!(CH5SET, ChSetReg);
+impl_rw_reg!(CH6SET, ChSetReg);
+impl_rw_reg!(CH7SET, ChSetReg);
+impl_rw_reg!(CH8SET, ChSetReg);
+impl_rw_reg!(RLD_SENSP, RldSensPReg);
+impl_rw_reg!(RLD_SENSN, RldSensNReg);
+impl_rw_reg!(LOFF_SENSP, LOffSensPReg);
+impl_rw_reg!(LOFF_SENSN, LOffSensNReg);
+impl_rw_reg!(LOFF_FLIP, LoffFlipReg);
+impl_rw_reg!(GPIO, GpioReg);
+impl_rw_reg!(PACE, PaceReg);
+impl_rw_reg!(RESP, RespReg);
+impl_rw_reg!(CONFIG4, Config4Reg);
+impl_rw_reg!(WCT1, Wct1Reg);
+impl_rw_reg!(WCT2, Wct2Reg);

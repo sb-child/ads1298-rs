@@ -14,4 +14,5 @@ pub enum InitializeError<SpiError> {
         address: u8,
         data: u8,
     },
+    ResetError(WriteError<SpiError>),
 }
