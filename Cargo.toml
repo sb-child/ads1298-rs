@@ -2,6 +2,8 @@
 name = "ads1298-rs"
 version = "0.1.0"
 edition = "2021"
+authors = ["sbchild <sbchild0@gmail.com> <zinu5k7d1k2uzsxa@proton.me>"]
+license = "MIT"
 
 [dependencies]
 bitfield = "0.17.0"

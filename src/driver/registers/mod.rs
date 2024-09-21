@@ -10,7 +10,6 @@ use ux::u24;
 /// 9.4.1.3 数据检索
 #[derive(Clone, Copy, Debug)]
 pub enum DataRegister {
-    // DATA_STATUS(data::DataStatus),
     DATA_STATUS_1(data::DataStatus1),
     DATA_STATUS_2(data::DataStatus2),
     DATA_STATUS_3(data::DataStatus3),

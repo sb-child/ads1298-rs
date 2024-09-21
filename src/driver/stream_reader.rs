@@ -12,6 +12,8 @@ use super::{
 };
 
 /// `StreamReader` is used to continuously read data from the ADS1298 by using streaming mode.
+///
+/// todo: It uses `RDATA` command for now.
 pub struct StreamReader<'a, Spi: SpiDevice> {
     pub driver: &'a mut ADS1298<Spi>,
     buffer: Vec<u8>,
