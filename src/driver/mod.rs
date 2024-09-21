@@ -11,7 +11,7 @@ use registers::{
     WCT1, WCT2,
 };
 
-use crate::driver::initialization::{Application3Lead, InitializeError, Initializer};
+use crate::driver::initialization::{Default8Lead1x32K, InitializeError, Initializer};
 use crate::driver::registers::access::{ReadError, ReadFromRegister, WriteToRegister};
 use crate::driver::registers::addressable::Addressable;
 
@@ -46,14 +46,14 @@ pub enum StreamError<SpiError> {
     StreamingAbort(ReadError<SpiError>),
 }
 
-impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
+impl<SPI: SpiDevice> Initializer<Default8Lead1x32K> for ADS1298<SPI> {
     type SpiError = SPI::Error;
 
     /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
     /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
     fn init(
         &mut self,
-        _application: Application3Lead,
+        _application: Default8Lead1x32K,
     ) -> Result<(), InitializeError<Self::SpiError>> {
         // 重置芯片
         self.operator.reset().map_err(InitializeError::ResetError)?;
