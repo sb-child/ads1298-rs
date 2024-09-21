@@ -11,7 +11,7 @@ use registers::{
     WCT1, WCT2,
 };
 
-use crate::driver::initialization::{Default8Lead1x32K, InitializeError, Initializer};
+use crate::driver::initialization::{Default8Lead1x8K, InitializeError, Initializer};
 use crate::driver::registers::access::{ReadError, ReadFromRegister, WriteToRegister};
 use crate::driver::registers::addressable::Addressable;
 
@@ -46,14 +46,14 @@ pub enum StreamError<SpiError> {
     StreamingAbort(ReadError<SpiError>),
 }
 
-impl<SPI: SpiDevice> Initializer<Default8Lead1x32K> for ADS1298<SPI> {
+impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
     type SpiError = SPI::Error;
 
     /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
     /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
     fn init(
         &mut self,
-        _application: Default8Lead1x32K,
+        _application: Default8Lead1x8K,
     ) -> Result<(), InitializeError<Self::SpiError>> {
         // 重置芯片
         self.operator.reset().map_err(InitializeError::ResetError)?;
@@ -61,11 +61,11 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x32K> for ADS1298<SPI> {
         self.operator
             .stop_stream()
             .map_err(InitializeError::ResetError)?;
-        // 高分辨率模式, 输出数据速率 32kSPS
+        // 高分辨率模式, 输出数据速率 8kSPS
         self.write(CONFIG1, {
             let mut x = Config1Reg(0);
             x.set_hr(true);
-            x.set_dr(0b000);
+            x.set_dr(0b010);
             x
         })
         .map_err(InitializeError::ResetError)?;

@@ -5,7 +5,7 @@ pub trait Initializer<Application> {
     fn init(&mut self, application: Application) -> Result<(), InitializeError<Self::SpiError>>;
 }
 
-pub struct Default8Lead1x32K;
+pub struct Default8Lead1x8K;
 
 #[derive(Debug)]
 pub enum InitializeError<SpiError> {
