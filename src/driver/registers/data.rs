@@ -178,6 +178,7 @@ bitfield! {
 
 bitfield! {
     /// ID 控制寄存器 地址 = `00h` 复位 = `xxh`
+    #[derive(Clone, Copy)]
     pub struct IdReg(u8);
     impl Debug;
     bool;
@@ -201,6 +202,7 @@ bitfield! {
 
 bitfield! {
     /// 配置寄存器 1 地址 = `01h` 复位 = `06h`
+    #[derive(Clone, Copy)]
     pub struct Config1Reg(u8);
     impl Debug;
     bool; u8;
@@ -250,6 +252,7 @@ bitfield! {
 
 bitfield! {
     /// 配置寄存器 2 地址 = `02h` 复位 = `40h`
+    #[derive(Clone, Copy)]
     pub struct Config2Reg(u8);
     impl Debug;
     bool; u8;
@@ -297,6 +300,7 @@ bitfield! {
 
 bitfield! {
     /// 配置寄存器 3 地址 = `03h` 复位 = `40h`
+    #[derive(Clone, Copy)]
     pub struct Config3Reg(u8);
     impl Debug;
     bool;
@@ -357,6 +361,7 @@ bitfield! {
 
 bitfield! {
     /// 导联脱落控制寄存器 地址 = `04h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LOffReg(u8);
     impl Debug;
     bool; u8;
@@ -413,6 +418,7 @@ bitfield! {
 
 bitfield! {
     /// 通道设置 地址 = `05h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct ChSetReg(u8);
     impl Debug;
     bool; u8;
@@ -460,6 +466,7 @@ bitfield! {
 
 bitfield! {
     /// RLD 正信号导出寄存器 地址 = `0Dh` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct RldSensPReg(u8);
     impl Debug;
     bool; u8;
@@ -507,6 +514,7 @@ bitfield! {
 
 bitfield! {
     /// RLD 负信号导出寄存器 地址 = `0Eh` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct RldSensNReg(u8);
     impl Debug;
     bool; u8;
@@ -554,6 +562,7 @@ bitfield! {
 
 bitfield! {
     /// 正信号导联脱落检测寄存器 地址 = `0Fh` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LOffSensPReg(u8);
     impl Debug;
     bool; u8;
@@ -601,6 +610,7 @@ bitfield! {
 
 bitfield! {
     /// 负信号导联脱落检测寄存器 地址 = `10h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LOffSensNReg(u8);
     impl Debug;
     bool; u8;
@@ -648,6 +658,7 @@ bitfield! {
 
 bitfield! {
     /// 导联脱落翻转寄存器 地址 = `11h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LoffFlipReg(u8);
     impl Debug;
     bool; u8;
@@ -711,6 +722,7 @@ bitfield! {
 
 bitfield! {
     /// 导联脱落正信号状态寄存器 地址 = `12h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LOffStatPReg(u8);
     impl Debug;
     bool; u8;
@@ -774,6 +786,7 @@ bitfield! {
 
 bitfield! {
     /// 导联脱落负信号状态寄存器 地址 = `13h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct LOffStatNReg(u8);
     impl Debug;
     bool; u8;
@@ -837,6 +850,7 @@ bitfield! {
 
 bitfield! {
     /// 通用 I/O 寄存器 地址 = `14h` 复位 = `0Fh`
+    #[derive(Clone, Copy)]
     pub struct GpioReg(u8);
     impl Debug;
     bool; u8;
@@ -863,6 +877,7 @@ bitfield! {
 
 bitfield! {
     /// 起搏信号检测寄存器 地址 = `15h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct PaceReg(u8);
     impl Debug;
     bool; u8;
@@ -899,6 +914,7 @@ bitfield! {
 
 bitfield! {
     /// 呼吸控制寄存器 地址 = `16h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct RespReg(u8);
     impl Debug;
     bool; u8;
@@ -944,6 +960,7 @@ bitfield! {
 
 bitfield! {
     /// 配置寄存器 4 地址 = `17h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct Config4Reg(u8);
     impl Debug;
     bool; u8;
@@ -996,6 +1013,7 @@ bitfield! {
 
 bitfield! {
     /// 威尔逊中心端子和增强导联控制寄存器 地址 = `18h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct Wct1Reg(u8);
     impl Debug;
     bool; u8;
@@ -1041,6 +1059,7 @@ bitfield! {
 
 bitfield! {
     /// 威尔逊中心端子控制寄存器 地址 = `19h` 复位 = `00h`
+    #[derive(Clone, Copy)]
     pub struct Wct2Reg(u8);
     impl Debug;
     bool; u8;

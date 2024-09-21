@@ -146,6 +146,8 @@ pub enum StreamError<SpiError> {
 impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
     type SpiError = SPI::Error;
 
+    /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
+    /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
     fn init(
         &mut self,
         _application: Application3Lead,
@@ -156,11 +158,11 @@ impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
         self.operator
             .stop_stream()
             .map_err(InitializeError::ResetError)?;
-        // 高分辨率模式, 输出数据速率 8kSPS
+        // 高分辨率模式, 输出数据速率 32kSPS
         self.write(CONFIG1, {
             let mut x = Config1Reg(0);
             x.set_hr(true);
-            x.set_dr(0b010);
+            x.set_dr(0b000);
             x
         })
         .map_err(InitializeError::ResetError)?;
@@ -170,36 +172,57 @@ impl<SPI: SpiDevice> Initializer<Application3Lead> for ADS1298<SPI> {
             x
         })
         .map_err(InitializeError::ResetError)?;
-    
+        // 调节所有通道增益为 1
+        let data = {
+            let mut x = ChSetReg(0);
+            x.set_mux(0b000);
+            x.set_gain(0b001);
+            x
+        };
+        self.write(CH1SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH2SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH3SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH4SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH5SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH6SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH7SET, data)
+            .map_err(InitializeError::ResetError)?;
+        self.write(CH8SET, data)
+            .map_err(InitializeError::ResetError)?;
 
-        struct AddressData(u8, u8);
-
-        const INITIAL_ADDRESS_DATA_ARR: &'static [AddressData] = &[
-            AddressData(0x01, 0x11),
-            AddressData(0x02, 0x19),
-            AddressData(0x0A, 0x07),
-            AddressData(0x0C, 0x04),
-            AddressData(0x12, 0x04),
-            AddressData(0x12, 0x04),
-            AddressData(0x14, 0x24),
-            AddressData(0x21, 0x02),
-            AddressData(0x22, 0x02),
-            AddressData(0x23, 0x02),
-            AddressData(0x27, 0x08),
-            // Additionally enable data status retrieving.
-            AddressData(0x2F, 0x31),
-            AddressData(0x00, 0x01),
-        ];
-        // self.write(, data)
-        for address_data in INITIAL_ADDRESS_DATA_ARR {
-            self.operator
-                .write(address_data.0, address_data.1)
-                .map_err(|e| InitializeError::WriteError {
-                    source: e,
-                    address: address_data.0,
-                    data: address_data.1,
-                })?;
-        }
+        // struct AddressData(u8, u8);
+        // const INITIAL_ADDRESS_DATA_ARR: &'static [AddressData] = &[
+        //     AddressData(0x01, 0x11),
+        //     AddressData(0x02, 0x19),
+        //     AddressData(0x0A, 0x07),
+        //     AddressData(0x0C, 0x04),
+        //     AddressData(0x12, 0x04),
+        //     AddressData(0x12, 0x04),
+        //     AddressData(0x14, 0x24),
+        //     AddressData(0x21, 0x02),
+        //     AddressData(0x22, 0x02),
+        //     AddressData(0x23, 0x02),
+        //     AddressData(0x27, 0x08),
+        //     // Additionally enable data status retrieving.
+        //     AddressData(0x2F, 0x31),
+        //     AddressData(0x00, 0x01),
+        // ];
+        // // self.write(, data)
+        // for address_data in INITIAL_ADDRESS_DATA_ARR {
+        //     self.operator
+        //         .write(address_data.0, address_data.1)
+        //         .map_err(|e| InitializeError::WriteError {
+        //             source: e,
+        //             address: address_data.0,
+        //             data: address_data.1,
+        //         })?;
+        // }
 
         Ok(())
     }

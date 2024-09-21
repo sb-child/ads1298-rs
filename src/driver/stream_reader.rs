@@ -72,6 +72,7 @@ impl<'a, Spi: SpiDevice> StreamReader<'a, Spi> {
         Ok(Self { driver, buffer })
     }
 
+    /// before read, please set `START` = `high`, and wait for `DRDY` become `high`
     pub fn read(&mut self) -> Result<Vec<registers::DataRegister>, StreamError<Spi::Error>> {
         let buffer = self
             .driver
