@@ -75,6 +75,14 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             x
         })
         .map_err(InitializeError::ResetError)?;
+        // 使用内部基准
+        self.write(CONFIG3, {
+            let mut x = Config3Reg(0);
+            x.set_rev_6(true);
+            x.set_pd_refbuf(true);
+            x
+        })
+        .map_err(InitializeError::ResetError)?;
         // 调节所有通道增益为 1
         let data = {
             let mut x = ChSetReg(0);
@@ -98,6 +106,9 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             .map_err(InitializeError::ResetError)?;
         self.write(CH8SET, data)
             .map_err(InitializeError::ResetError)?;
+
+        // 启动转换
+        self.operator.start().map_err(InitializeError::ResetError)?;
 
         Ok(())
     }
