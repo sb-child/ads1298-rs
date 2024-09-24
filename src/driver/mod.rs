@@ -144,6 +144,36 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH8")))
         })?;
 
+        // 启用正信号导联脱落检测
+        self.write(LOFF_SENSP, {
+            let mut x = LOffSensPReg(0);
+            x.set_loff1p(true);
+            x.set_loff2p(true);
+            x.set_loff3p(true);
+            x.set_loff4p(true);
+            x.set_loff5p(true);
+            x.set_loff6p(true);
+            x.set_loff7p(true);
+            x.set_loff8p(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable LOffSensP"))))?;
+
+        // 启用负信号导联脱落检测
+        self.write(LOFF_SENSN, {
+            let mut x = LOffSensNReg(0);
+            x.set_loff1n(true);
+            x.set_loff2n(true);
+            x.set_loff3n(true);
+            x.set_loff4n(true);
+            x.set_loff5n(true);
+            x.set_loff6n(true);
+            x.set_loff7n(true);
+            x.set_loff8n(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable LOffSensN"))))?;
+
         // 启动转换
         self.operator.start().map_err(|e| {
             InitializeError::ResetError(e, Some(format!("Failed to enable converting mode")))

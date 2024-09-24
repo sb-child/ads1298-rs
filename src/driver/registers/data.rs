@@ -23,33 +23,33 @@ bitfield! {
     /// 有关 IN5P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in5p_off, set_in5p_off: 7;
+    pub in5p_off, set_in5p_off: 0;
     /// 通道 6 正通道导联脱落状态
     ///
     /// 有关 IN6P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in6p_off, set_in6p_off: 6;
+    pub in6p_off, set_in6p_off: 1;
     /// 通道 7 正通道导联脱落状态
     ///
     /// 有关 IN7P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in7p_off, set_in7p_off: 5;
+    pub in7p_off, set_in7p_off: 2;
     /// 通道 8 正通道导联脱落状态
     ///
     /// 有关 IN8P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in8p_off, set_in8p_off: 4;
+    pub in8p_off, set_in8p_off: 3;
     /// Should be `0`
-    pub prefix_3, set_prefix_3: 3;
+    pub prefix_4, set_prefix_4: 4;
     /// Should be `0`
-    pub prefix_2, set_prefix_2: 2;
+    pub prefix_5, set_prefix_5: 5;
     /// Should be `1`
-    pub prefix_1, set_prefix_1: 1;
+    pub prefix_6, set_prefix_6: 6;
     /// Should be `1`
-    pub prefix_0, set_prefix_0: 0;
+    pub prefix_7, set_prefix_7: 7;
 }
 
 bitfield! {
@@ -65,49 +65,49 @@ bitfield! {
     /// 有关 IN5N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in5n_off, set_in5n_off: 7;
+    pub in5n_off, set_in5n_off: 0;
     /// 通道 6 负通道导联脱落状态
     ///
     /// 有关 IN6N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in6n_off, set_in6n_off: 6;
+    pub in6n_off, set_in6n_off: 1;
     /// 通道 7 负通道导联脱落状态
     ///
     /// 有关 IN7N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in7n_off, set_in7n_off: 5;
+    pub in7n_off, set_in7n_off: 2;
     /// 通道 8 负通道导联脱落状态
     ///
     /// 有关 IN8N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in8n_off, set_in8n_off: 4;
+    pub in8n_off, set_in8n_off: 3;
     /// 通道 1 正通道导联脱落状态
     ///
     /// 有关 IN1P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in1p_off, set_in1p_off: 3;
+    pub in1p_off, set_in1p_off: 4;
     /// 通道 2 正通道导联脱落状态
     ///
     /// 有关 IN2P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in2p_off, set_in2p_off: 2;
+    pub in2p_off, set_in2p_off: 5;
     /// 通道 3 正通道导联脱落状态
     ///
     /// 有关 IN3P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in3p_off, set_in3p_off: 1;
+    pub in3p_off, set_in3p_off: 6;
     /// 通道 4 正通道导联脱落状态
     ///
     /// 有关 IN4P 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in4p_off, set_in4p_off: 0;
+    pub in4p_off, set_in4p_off: 7;
 }
 
 bitfield! {
@@ -125,7 +125,7 @@ bitfield! {
     /// 论它们是编程为输入还是输出都是如此。作为输出时，对 GPIOD
     /// 进行写入可设置输出值。作为输入时，对 GPIOD 进行写入无效。
     /// GPIO 在某些呼吸模式下不可用。
-    pub gpiod_1, set_gpiod_1: 7;
+    pub gpiod_1, set_gpiod_1: 0;
     /// GPIO 数据 `[2]`
     ///
     /// 这些位用于从 GPIO 端口读取数据以及向其中写入数据。
@@ -133,7 +133,7 @@ bitfield! {
     /// 论它们是编程为输入还是输出都是如此。作为输出时，对 GPIOD
     /// 进行写入可设置输出值。作为输入时，对 GPIOD 进行写入无效。
     /// GPIO 在某些呼吸模式下不可用。
-    pub gpiod_2, set_gpiod_2: 6;
+    pub gpiod_2, set_gpiod_2: 1;
     /// GPIO 数据 `[3]`
     ///
     /// 这些位用于从 GPIO 端口读取数据以及向其中写入数据。
@@ -141,7 +141,7 @@ bitfield! {
     /// 论它们是编程为输入还是输出都是如此。作为输出时，对 GPIOD
     /// 进行写入可设置输出值。作为输入时，对 GPIOD 进行写入无效。
     /// GPIO 在某些呼吸模式下不可用。
-    pub gpiod_3, set_gpiod_3: 5;
+    pub gpiod_3, set_gpiod_3: 2;
     /// GPIO 数据 `[4]`
     ///
     /// 这些位用于从 GPIO 端口读取数据以及向其中写入数据。
@@ -149,31 +149,31 @@ bitfield! {
     /// 论它们是编程为输入还是输出都是如此。作为输出时，对 GPIOD
     /// 进行写入可设置输出值。作为输入时，对 GPIOD 进行写入无效。
     /// GPIO 在某些呼吸模式下不可用。
-    pub gpiod_4, set_gpiod_4: 4;
+    pub gpiod_4, set_gpiod_4: 3;
     /// 通道 1 负通道导联脱落状态
     ///
     /// 有关 IN1N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in1n_off, set_in1n_off: 3;
+    pub in1n_off, set_in1n_off: 4;
     /// 通道 2 负通道导联脱落状态
     ///
     /// 有关 IN2N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in2n_off, set_in2n_off: 2;
+    pub in2n_off, set_in2n_off: 5;
     /// 通道 3 负通道导联脱落状态
     ///
     /// 有关 IN3N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in3n_off, set_in3n_off: 1;
+    pub in3n_off, set_in3n_off: 6;
     /// 通道 4 负通道导联脱落状态
     ///
     /// 有关 IN4N 电极是打开还是关闭的状态
     ///
     /// 0：电极打开, 1：电极关闭
-    pub in4n_off, set_in4n_off: 0;
+    pub in4n_off, set_in4n_off: 7;
 }
 
 bitfield! {
