@@ -16,4 +16,5 @@ pub enum InitializeError<SpiError> {
     },
     ResetError(WriteError<SpiError>, Option<String>),
     ReadError(ReadError<SpiError>, Option<String>),
+    InitError(Option<String>),
 }
