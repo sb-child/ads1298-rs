@@ -56,11 +56,13 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
         _application: Default8Lead1x8K,
     ) -> Result<(), InitializeError<Self::SpiError>> {
         // 重置芯片
-        self.operator.reset().map_err(InitializeError::ResetError)?;
-        // 停止数据连续发送
         self.operator
-            .stop_stream()
-            .map_err(InitializeError::ResetError)?;
+            .reset()
+            .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to reset chip"))))?;
+        // 停止数据连续发送
+        self.operator.stop_stream().map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to disable converting mode")))
+        })?;
         // 高分辨率模式, 输出数据速率 8kSPS
         self.write(CONFIG1, {
             let mut x = Config1Reg(0);
@@ -68,13 +70,13 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             x.set_dr(0b010);
             x
         })
-        .map_err(InitializeError::ResetError)?;
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to set sample rate"))))?;
         // 不更改配置寄存器2
         self.write(CONFIG2, {
             let x = Config2Reg(0);
             x
         })
-        .map_err(InitializeError::ResetError)?;
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to set CONFIG2"))))?;
         // 使用内部基准
         self.write(CONFIG3, {
             let mut x = Config3Reg(0);
@@ -82,7 +84,9 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             x.set_pd_refbuf(true);
             x
         })
-        .map_err(InitializeError::ResetError)?;
+        .map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to switch to internal reference")))
+        })?;
         // 调节所有通道增益为 1
         let data = {
             let mut x = ChSetReg(0);
@@ -90,25 +94,35 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             x.set_gain(0b001);
             x
         };
-        self.write(CH1SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH2SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH3SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH4SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH5SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH6SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH7SET, data)
-            .map_err(InitializeError::ResetError)?;
-        self.write(CH8SET, data)
-            .map_err(InitializeError::ResetError)?;
+        self.write(CH1SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH1")))
+        })?;
+        self.write(CH2SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH2")))
+        })?;
+        self.write(CH3SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH3")))
+        })?;
+        self.write(CH4SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH4")))
+        })?;
+        self.write(CH5SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH5")))
+        })?;
+        self.write(CH6SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH6")))
+        })?;
+        self.write(CH7SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH7")))
+        })?;
+        self.write(CH8SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH8")))
+        })?;
 
         // 启动转换
-        self.operator.start().map_err(InitializeError::ResetError)?;
+        self.operator.start().map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to enable converting mode")))
+        })?;
 
         Ok(())
     }
