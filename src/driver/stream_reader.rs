@@ -61,6 +61,14 @@ const LOOP_READ_BACK_CONFIG_FIELDS: &'static [FieldConfig] = &[
         register: DataRegister::DATA_CH6(u24::new(0)),
         width: 3,
     },
+    FieldConfig {
+        register: DataRegister::DATA_CH7(u24::new(0)),
+        width: 3,
+    },
+    FieldConfig {
+        register: DataRegister::DATA_CH8(u24::new(0)),
+        width: 3,
+    },
 ];
 
 impl<'a, Spi: SpiDevice> StreamReader<'a, Spi> {
