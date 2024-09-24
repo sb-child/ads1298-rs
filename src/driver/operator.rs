@@ -82,16 +82,17 @@ impl<SPI: SpiDevice> WriteToRegister<Address, u8, SPI::Error> for Operator<SPI> 
 
 impl<SPI: SpiDevice> ReadFromRegister<Address, u8, SPI::Error> for Operator<SPI> {
     fn read(&mut self, address: Address) -> Result<u8, ReadError<SPI::Error>> {
-        let buffer: Vec<_> = OpCode::RReg {
+        // 2 bytes
+        let mut buffer: Vec<_> = OpCode::RReg {
             start: u5::new(address),
             n: u5::new(0),
         }
         .into();
-        let mut r_buffer = [0u8; 1];
         self.spi
-            .transaction(&mut [Operation::Transfer(&mut r_buffer, &buffer)])
+            .transaction(&mut [Operation::TransferInPlace(&mut buffer)])
             .map_err(ReadError::SpiTransferError)?;
-        Ok(r_buffer[0])
+        // first byte
+        Ok(buffer[0])
     }
 }
 
@@ -121,9 +122,9 @@ impl<SPI: SpiDevice> Operator<SPI> {
         &mut self,
         mut buffer: &'a mut [u8],
     ) -> Result<&'a mut [u8], ReadError<SPI::Error>> {
-        let command: Vec<_> = OpCode::RData.into();
+        let mut command: Vec<_> = OpCode::RData.into();
         self.spi
-            .transaction(&mut [Operation::Transfer(&mut buffer, &command)])
+            .transaction(&mut [Operation::Write(&command), Operation::Read(&mut buffer)])
             .map_err(ReadError::SpiTransferError)?;
         Ok(buffer)
     }
