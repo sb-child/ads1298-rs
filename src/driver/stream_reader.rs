@@ -86,7 +86,7 @@ impl<'a, Spi: SpiDevice> StreamReader<'a, Spi> {
         let buffer = self
             .driver
             .operator
-            .read_single_data(&mut self.buffer)
+            .read_single_data()
             .map_err(StreamError::StreamingAbort)?;
 
         let mut i = buffer.iter();

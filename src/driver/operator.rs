@@ -82,17 +82,16 @@ impl<SPI: SpiDevice> WriteToRegister<Address, u8, SPI::Error> for Operator<SPI> 
 
 impl<SPI: SpiDevice> ReadFromRegister<Address, u8, SPI::Error> for Operator<SPI> {
     fn read(&mut self, address: Address) -> Result<u8, ReadError<SPI::Error>> {
-        // 2 bytes
-        let mut buffer: Vec<_> = OpCode::RReg {
+        let buffer: Vec<_> = OpCode::RReg {
             start: u5::new(address),
             n: u5::new(0),
         }
         .into();
+        let mut r = [0u8];
         self.spi
-            .transaction(&mut [Operation::TransferInPlace(&mut buffer)])
+            .transaction(&mut [Operation::Write(&buffer), Operation::Read(&mut r)])
             .map_err(ReadError::SpiTransferError)?;
-        // first byte
-        Ok(buffer[0])
+        Ok(r[0])
     }
 }
 
@@ -120,13 +119,14 @@ impl<SPI: SpiDevice> Operator<SPI> {
     /// buffer size need to be 27 bytes
     pub fn read_single_data<'a>(
         &mut self,
-        mut buffer: &'a mut [u8],
-    ) -> Result<&'a mut [u8], ReadError<SPI::Error>> {
-        let mut command: Vec<_> = OpCode::RData.into();
+        // mut buffer: &'a mut [u8],
+    ) -> Result<[u8; 27], ReadError<SPI::Error>> {
+        let command: Vec<_> = OpCode::RData.into();
+        let mut r = [0u8; 27];
         self.spi
-            .transaction(&mut [Operation::Write(&command), Operation::Read(&mut buffer)])
+            .transaction(&mut [Operation::Write(&command), Operation::Read(&mut r)])
             .map_err(ReadError::SpiTransferError)?;
-        Ok(buffer)
+        Ok(r)
     }
 
     /// 退出待机模式
