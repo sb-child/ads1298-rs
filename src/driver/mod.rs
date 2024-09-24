@@ -52,27 +52,41 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
     /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
     /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
     ///
-    /// Note: `SpiConfig::allow_pre_post_delays` must be `true`
+    /// Notes:
+    /// - `SpiConfig::allow_pre_post_delays` *must* be `true`
+    /// - `SpiConfig::data_mode` *must* be `polarity = IdleLow` and `phase: CaptureOnSecondTransition`
+    /// - `CS#` ~ first `SCLK` *must* be greater than 6 ns
+    /// - last `SCLK` ~ `CS#` becomes `high` *must* be greater than 2000 ns
     fn init(
         &mut self,
         _application: Default8Lead1x8K,
     ) -> Result<(), InitializeError<Self::SpiError>> {
-        // 重置芯片
-        self.operator
-            .reset()
-            .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to reset chip"))))?;
-        // 停止数据连续发送
-        self.operator.stop_stream().map_err(|e| {
-            InitializeError::ResetError(e, Some(format!("Failed to disable converting mode")))
-        })?;
-        // 测试读取 ID 寄存器
-        let id_reg = self.read(ID).map_err(|e| {
-            InitializeError::ReadError(e, Some(format!("Failed to read ID register")))
-        })?;
-        if id_reg.rev_4() != true {
-            return Err(InitializeError::InitError(Some(format!(
-                "Incorrect ID register"
-            ))));
+        let mut retries = 10;
+        let mut inited = false;
+
+        while !inited {
+            if retries <= 0 {
+                return Err(InitializeError::InitError(Some(format!(
+                    "Incorrect ID register, check your SPI config and connection"
+                ))));
+            }
+            // 重置芯片
+            self.operator.reset().map_err(|e| {
+                InitializeError::ResetError(e, Some(format!("Failed to reset chip")))
+            })?;
+            // 停止数据连续发送
+            self.operator.stop_stream().map_err(|e| {
+                InitializeError::ResetError(e, Some(format!("Failed to disable converting mode")))
+            })?;
+            // 测试读取 ID 寄存器
+            let id_reg = self.read(ID).map_err(|e| {
+                InitializeError::ReadError(e, Some(format!("Failed to read ID register")))
+            })?;
+            if id_reg.rev_4() == true {
+                inited = true;
+            } else {
+                retries -= 1;
+            }
         }
         // 高分辨率模式, 输出数据速率 8kSPS
         self.write(CONFIG1, {
