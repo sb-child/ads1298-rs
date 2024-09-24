@@ -71,7 +71,7 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
             let id_reg = self.read(ID).map_err(|e| {
                 InitializeError::ReadError(e, Some(format!("Failed to read ID register")))
             })?;
-            if id_reg.rev_4() != true {
+            if id_reg.rev_4() == true {
                 initalized = true;
             }
         }
