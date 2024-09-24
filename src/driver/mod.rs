@@ -51,6 +51,8 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
 
     /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
     /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
+    /// 
+    /// Note: `SpiConfig::allow_pre_post_delays` must be `true`
     fn init(
         &mut self,
         _application: Default8Lead1x8K,
