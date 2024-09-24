@@ -1,4 +1,4 @@
-use crate::driver::registers::access::WriteError;
+use crate::driver::registers::access::{ReadError, WriteError};
 
 pub trait Initializer<Application> {
     type SpiError;
@@ -15,4 +15,5 @@ pub enum InitializeError<SpiError> {
         data: u8,
     },
     ResetError(WriteError<SpiError>, Option<String>),
+    ReadError(ReadError<SpiError>, Option<String>),
 }

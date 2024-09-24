@@ -51,20 +51,30 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x8K> for ADS1298<SPI> {
 
     /// Before init, please set `CLKSEL` to what you need, and wait for 20 us.
     /// Then set `PDWN` = `high` and `RESET` = `high`, and wait for > 150 ms.
-    /// 
+    ///
     /// Note: `SpiConfig::allow_pre_post_delays` must be `true`
     fn init(
         &mut self,
         _application: Default8Lead1x8K,
     ) -> Result<(), InitializeError<Self::SpiError>> {
-        // 重置芯片
-        self.operator
-            .reset()
-            .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to reset chip"))))?;
-        // 停止数据连续发送
-        self.operator.stop_stream().map_err(|e| {
-            InitializeError::ResetError(e, Some(format!("Failed to disable converting mode")))
-        })?;
+        let mut initalized = false;
+        while !initalized {
+            // 重置芯片
+            self.operator.reset().map_err(|e| {
+                InitializeError::ResetError(e, Some(format!("Failed to reset chip")))
+            })?;
+            // 停止数据连续发送
+            self.operator.stop_stream().map_err(|e| {
+                InitializeError::ResetError(e, Some(format!("Failed to disable converting mode")))
+            })?;
+            // 测试读取
+            let id_reg = self.read(ID).map_err(|e| {
+                InitializeError::ReadError(e, Some(format!("Failed to read ID register")))
+            })?;
+            if id_reg.rev_4() != true {
+                initalized = true;
+            }
+        }
         // 高分辨率模式, 输出数据速率 8kSPS
         self.write(CONFIG1, {
             let mut x = Config1Reg(0);
