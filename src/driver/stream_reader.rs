@@ -68,8 +68,7 @@ impl<'a, Spi: SpiDevice> StreamReader<'a, Spi> {
         let buffer_len = LOOP_READ_BACK_CONFIG_FIELDS
             .iter()
             .map(|field| field.width)
-            .sum::<usize>()
-            + 1;
+            .sum::<usize>();
         let buffer: Vec<u8> = vec![0xff; buffer_len];
         Ok(Self { driver, buffer })
     }
@@ -82,50 +81,97 @@ impl<'a, Spi: SpiDevice> StreamReader<'a, Spi> {
             .read_single_data(&mut self.buffer)
             .map_err(StreamError::StreamingAbort)?;
 
-        let mut cursor = (0, 0);
+        let mut i = buffer.iter();
+        let mut r = vec![];
+        r.push(DataRegister::DATA_STATUS_1(DataStatus1(*i.next().unwrap())));
+        r.push(DataRegister::DATA_STATUS_2(DataStatus2(*i.next().unwrap())));
+        r.push(DataRegister::DATA_STATUS_3(DataStatus3(*i.next().unwrap())));
+        r.push(DataRegister::DATA_CH1(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH2(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH3(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH4(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH5(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH6(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH7(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
+        r.push(DataRegister::DATA_CH8(u24::new(BigEndian::read_u24(&[
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+            *i.next().unwrap(),
+        ]))));
 
-        let result = LOOP_READ_BACK_CONFIG_FIELDS
-            .iter()
-            .map(|enabled_field| {
-                let &FieldConfig { register, width } = enabled_field;
+        // let mut cursor = (0, 0);
 
-                let mut register = register.clone();
-                cursor = (cursor.1, cursor.1 + width);
+        // let result: Vec<DataRegister> = LOOP_READ_BACK_CONFIG_FIELDS
+        //     .iter()
+        //     .map(|enabled_field| {
+        //         let &FieldConfig { register, width } = enabled_field;
 
-                macro_rules! ecg {
-                    ($data: ident, $raw: ident) => {{
-                        debug_assert!($raw.len() == 3);
-                        *$data = u24::new(BigEndian::read_u24(&$raw))
-                    }};
-                }
+        //         let mut register = register.clone();
+        //         cursor = (cursor.1, cursor.1 + width);
 
-                let raw = &buffer[cursor.0..cursor.1];
-                match &mut register {
-                    DataRegister::DATA_STATUS_1(data) => {
-                        debug_assert!(raw.len() == 1);
-                        *data = DataStatus1(raw[0]);
-                    }
-                    DataRegister::DATA_STATUS_2(data) => {
-                        debug_assert!(raw.len() == 1);
-                        *data = DataStatus2(raw[0]);
-                    }
-                    DataRegister::DATA_STATUS_3(data) => {
-                        debug_assert!(raw.len() == 1);
-                        *data = DataStatus3(raw[0]);
-                    }
-                    DataRegister::DATA_CH1(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH2(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH3(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH4(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH5(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH6(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH7(data) => ecg!(data, raw),
-                    DataRegister::DATA_CH8(data) => ecg!(data, raw),
-                }
-                register
-            })
-            .collect::<Vec<_>>();
+        //         macro_rules! ecg {
+        //             ($data: ident, $raw: ident) => {{
+        //                 debug_assert!($raw.len() == 3);
+        //                 *$data = u24::new(BigEndian::read_u24(&$raw))
+        //             }};
+        //         }
 
-        Ok(result)
+        //         let raw = &buffer[cursor.0..cursor.1];
+        //         match &mut register {
+        //             DataRegister::DATA_STATUS_1(data) => {
+        //                 debug_assert!(raw.len() == 1);
+        //                 *data = DataStatus1(raw[0]);
+        //             }
+        //             DataRegister::DATA_STATUS_2(data) => {
+        //                 debug_assert!(raw.len() == 1);
+        //                 *data = DataStatus2(raw[0]);
+        //             }
+        //             DataRegister::DATA_STATUS_3(data) => {
+        //                 debug_assert!(raw.len() == 1);
+        //                 *data = DataStatus3(raw[0]);
+        //             }
+        //             DataRegister::DATA_CH1(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH2(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH3(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH4(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH5(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH6(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH7(data) => ecg!(data, raw),
+        //             DataRegister::DATA_CH8(data) => ecg!(data, raw),
+        //         }
+        //         register
+        //     })
+        //     .collect::<Vec<_>>();
+
+        // Ok(result)
+        Ok(r)
     }
 }
