@@ -159,7 +159,7 @@ impl<SPI: SpiDevice> Operator<SPI> {
         self.spi
             .transaction(&mut [
                 Operation::Write(&command),
-                Operation::DelayNs(TCLK_2_048M * 18),
+                // Operation::DelayNs(TCLK_2_048M * 18),
             ])
             .map_err(WriteError::SpiTransferError)?;
         Ok(())
