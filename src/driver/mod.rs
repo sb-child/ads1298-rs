@@ -107,11 +107,20 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             let mut x = Config3Reg(0);
             x.set_rev_6(true);
             x.set_pd_refbuf(true);
+            x.set_pd_rld(true);
             x
         })
         .map_err(|e| {
             InitializeError::ResetError(e, Some(format!("Failed to switch to internal reference")))
         })?;
+        // WCT 连接到 RLD
+        self.write(CONFIG4, {
+            let mut x = Config4Reg(0);
+            x.set_wct_to_rld(true);
+            x.set_pd_loff_comp(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to set CONFIG4"))))?;
         // 调节所有通道增益为 1
         let data = {
             let mut x = ChSetReg(0);
@@ -173,6 +182,27 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             x
         })
         .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable LOffSensN"))))?;
+
+        // WCT RA -> 通道 2 正输入
+        self.write(WCT1, {
+            let mut x = Wct1Reg(0);
+            x.set_wcta_channel(0b010);
+            x.set_pd_wtca(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to setup WCT1"))))?;
+
+        // WCT LA -> 通道 2 负输入
+        // WCT LL -> 通道 3 负输入
+        self.write(WCT2, {
+            let mut x = Wct2Reg(0);
+            x.set_wctb_channel(0b011);
+            x.set_wctc_channel(0b101);
+            x.set_pd_wctb(true);
+            x.set_pd_wctc(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to setup WCT1"))))?;
 
         // 启动转换
         self.operator.start().map_err(|e| {
