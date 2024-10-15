@@ -108,6 +108,7 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             x.set_rev_6(true);
             x.set_pd_refbuf(true);
             x.set_pd_rld(true);
+            x.set_rldref_int(false);
             x
         })
         .map_err(|e| {
@@ -153,6 +154,15 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH8")))
         })?;
 
+        // 启用导联脱落检测
+        self.write(LOFF, {
+            let mut x = LOffReg(0);
+            x.set_flead_off(0b11);
+            x.set_vlead_off_en(true);
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable LOff"))))?;
+
         // 启用正信号导联脱落检测
         self.write(LOFF_SENSP, {
             let mut x = LOffSensPReg(0);
@@ -183,26 +193,44 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
         })
         .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable LOffSensN"))))?;
 
-        // WCT RA -> 通道 2 正输入
+        // 右腿驱动正信号
+        self.write(RLD_SENSP, {
+            let mut x = RldSensPReg(0);
+            x.set_rld2p(true); // IN2P -> RA
+            x.set_rld3p(true); // IN3P -> LA
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable RldSensP"))))?;
+
+        // 右腿驱动负信号
+        self.write(RLD_SENSN, {
+            let mut x = RldSensNReg(0);
+            x.set_rld2n(true); // IN2N -> LA
+            x.set_rld3n(true); // IN3N -> LL
+            x
+        })
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to enable RldSensN"))))?;
+
+        // WCT RA -> 通道 4 负输入
         self.write(WCT1, {
             let mut x = Wct1Reg(0);
-            x.set_wcta_channel(0b010);
-            x.set_pd_wtca(true);
+            // x.set_wcta_channel(0b111);
+            x.set_pd_wtca(false);
             x
         })
         .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to setup WCT1"))))?;
 
-        // WCT LA -> 通道 2 负输入
-        // WCT LL -> 通道 3 负输入
+        // WCT LA -> 通道 3 负输入
+        // WCT LL -> 通道 2 正输入
         self.write(WCT2, {
             let mut x = Wct2Reg(0);
-            x.set_wctb_channel(0b011);
-            x.set_wctc_channel(0b101);
-            x.set_pd_wctb(true);
-            x.set_pd_wctc(true);
+            // x.set_wctb_channel(0b101);
+            // x.set_wctc_channel(0b010);
+            x.set_pd_wctb(false);
+            x.set_pd_wctc(false);
             x
         })
-        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to setup WCT1"))))?;
+        .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to setup WCT2"))))?;
 
         // 启动转换
         self.operator.start().map_err(|e| {
