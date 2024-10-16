@@ -122,21 +122,15 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             x
         })
         .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to set CONFIG4"))))?;
-        // 调节所有通道增益为 1
+        // 调节 1,4,5,6,7,8 通道增益为 6
         let data = {
             let mut x = ChSetReg(0);
             x.set_mux(0b000);
-            x.set_gain(0b001);
+            x.set_gain(0b000);
             x
         };
         self.write(CH1SET, data).map_err(|e| {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH1")))
-        })?;
-        self.write(CH2SET, data).map_err(|e| {
-            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH2")))
-        })?;
-        self.write(CH3SET, data).map_err(|e| {
-            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH3")))
         })?;
         self.write(CH4SET, data).map_err(|e| {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH4")))
@@ -152,6 +146,20 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
         })?;
         self.write(CH8SET, data).map_err(|e| {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH8")))
+        })?;
+
+        // 调节 2,3 通道增益为 1
+        let data = {
+            let mut x = ChSetReg(0);
+            x.set_mux(0b000);
+            x.set_gain(0b001);
+            x
+        };
+        self.write(CH2SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH2")))
+        })?;
+        self.write(CH3SET, data).map_err(|e| {
+            InitializeError::ResetError(e, Some(format!("Failed to set gain for CH3")))
         })?;
 
         // 启用导联脱落检测
