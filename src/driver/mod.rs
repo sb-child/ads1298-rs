@@ -122,11 +122,11 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             x
         })
         .map_err(|e| InitializeError::ResetError(e, Some(format!("Failed to set CONFIG4"))))?;
-        // 调节 1,4,5,6,7,8 通道增益为 6
+        // 调节 1,4,5,6,7,8 通道增益为 2
         let data = {
             let mut x = ChSetReg(0);
             x.set_mux(0b000);
-            x.set_gain(0b000);
+            x.set_gain(0b010);
             x
         };
         self.write(CH1SET, data).map_err(|e| {
@@ -148,11 +148,11 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             InitializeError::ResetError(e, Some(format!("Failed to set gain for CH8")))
         })?;
 
-        // 调节 2,3 通道增益为 6
+        // 调节 2,3 通道增益为 2
         let data = {
             let mut x = ChSetReg(0);
             x.set_mux(0b000);
-            x.set_gain(0b000);
+            x.set_gain(0b010);
             x
         };
         self.write(CH2SET, data).map_err(|e| {
