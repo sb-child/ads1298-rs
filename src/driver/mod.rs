@@ -108,7 +108,8 @@ impl<SPI: SpiDevice> Initializer<Default8Lead1x500> for ADS1298<SPI> {
             x.set_rev_6(true);
             x.set_pd_refbuf(true);
             x.set_pd_rld(true);
-            x.set_rldref_int(false);
+            x.set_rldref_int(true);
+            x.set_rld_meas(true);
             x
         })
         .map_err(|e| {
